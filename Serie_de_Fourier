@@ -1,0 +1,40 @@
+from sympy import integrate, var, cos, sin, pi, Integral, plot, exp
+
+x = var('x')
+t = var('t')
+def inner_product(f, g, var, a, b):
+    return integrate( f*g, (x,a,b)).evalf()
+
+
+def orthogonal_projection(f, g, var, a, b):
+    norma_g = inner_product(g,g,var, a, b)
+    return ((inner_product(f, g, var, a, b)/norma_g) * g).evalf()
+
+
+def gram_schmidt(funcs, var, a, b):
+    ws = []
+    for f in funcs:
+        ws.append(f - sum(orthogonal_projection(f, w, var, a, b) for w in ws))
+    return ws
+
+
+def fourier(f):
+    pi2 = pi.evalf()
+    sum = (1/(2*pi2)) * integrate(f, (x, -pi, pi)).evalf()
+    for i in range(50):
+        sum += (1/pi2)*integrate(f * cos(i*x), (x, -pi, pi)).evalf()*cos(i*x)
+        sum += (1/pi2)*integrate(f * sin(i*x), (x, -pi, pi)).evalf()*sin(i*x)
+    return sum
+
+base = [1,x,x**2,x**3,x**4]
+
+base_ort = gram_schmidt(base, x, -1, 1)
+sum_ = 0
+for f in base_ort:
+    sum_ += sum(inner_product(f, w, x, -1, 1) for w in base_ort)
+
+sum_
+
+
+f = fourier(abs(x))
+plot(f, xlim=(-6,6), ylim=(-2,8))
